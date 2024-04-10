@@ -1,0 +1,9 @@
+llama-index
+langchain
+sentence-transformers
+weaviate-client
+pypdf
+python-box
+flask
+python-multipart
+streamlit

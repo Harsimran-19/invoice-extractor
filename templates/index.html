@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Frontend</title>
+    <!-- Include tailwindcss CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .loading-box {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        .custom-textarea {
+            width: 100%;
+            min-height: 400px;
+            background-color: #1a202c;
+        }
+
+        body {
+            background-color: #1a202c; /* Dark background color */
+        }
+
+        .primary-color {
+            background-color: #805ad5; /* Purple primary color */
+        }
+    </style>
+</head>
+<body >
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-semibold mb-4 text-white">Invoice Information Extractor</h1>
+        <div class="flex justify-center items-center mb-4">
+            <div class="w-full mt-10 pl-2">
+                <h2 class="text-xl fon t-semibold mb-4 text-white">Extracted Information</h2>
+                <textarea id="extractedInfo" class="custom-textarea p-4 mb-4 rounded-lg border resize-none text-white" placeholder="Extracted information will appear here" readonly></textarea>
+            </div>
+        </div>
+        <div class="flex justify-start mb-4 px-5">
+            <input type="file" id="pdfFile" class="hidden">
+<label for="pdfFile" class="cursor-pointer bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg text-center">
+    <!-- <svg class="w-6 h-6 mr-2 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 8v4m0 0v4m0-4h4m-4 0H6"></path>
+    </svg> -->
+    Choose File
+</label>
+            <button id="extractInfo" class="bg-purple-600 ml-10 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg" disabled>Extract Info</button>
+        </div>
+    </div>
+
+    <!-- Success message box -->
+    <div id="successBox" class="hidden flex items-center justify-center bg-green-500 text-white font-semibold px-4 py-2 rounded-lg fixed bottom-20 right-20">
+        PDF ingested successfully
+    </div>
+
+    <!-- Error message box -->
+    <div id="errorBox" class="hidden flex items-center justify-center bg-red-500 text-white font-semibold px-4 py-2 rounded-lg fixed bottom-20 right-20">
+        Error ingesting PDF
+    </div>
+
+    <!-- Loading box -->
+    <div id="loadingBox" class="loading-box">
+        <div class="flex items-center justify-center">
+            <svg class="animate-spin h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A8.008 8.008 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647zM20 12c0-3.042-1.135-5.824-3-7.938l-3 2.647A7.963 7.963 0 0112 4v8h8zm-5 8a7.963 7.963 0 01-3-2.647l-3 2.647A8.008 8.008 0 0112 20h8zM5.373 0v4a8.007 8.007 0 01-2.647 3l2.647 3A8.008 8.008 0 010 12H0C0 5.373 5.373 0 12 0h-6.627z"></path>
+            </svg>
+            <span>Loading...</span>
+        </div>
+    </div>
+
+    <!-- Include PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.472/pdf.min.js"></script>
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+    // Event listener for file input change
+    $("#pdfFile").change(function() {
+        const file = this.files[0];
+        if (file) {
+            showLoading();
+            document.getElementById('extractInfo').disabled = true;
+            document.getElementById('successBox').classList.add('hidden');
+            document.getElementById('errorBox').classList.add('hidden');
+            renderPDF(file);
+            uploadPDF(file);
+        }
+    });
+    
+    // Event listener for extract info button
+    $("#extractInfo").click(function() {
+        showLoading();
+        fetchAPI('/extract');
+    });
+
+    // Function to render PDF file as image using PDF.js
+    function renderPDF(file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const pdfData = new Uint8Array(event.target.result);
+            pdfjsLib.getDocument(pdfData).promise.then(function(pdf) {
+                pdf.getPage(1).then(function(page) {
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    const renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    page.render(renderContext).promise.then(function() {
+                        document.getElementById('pdfViewer').innerHTML = '';
+                        document.getElementById('pdfViewer').appendChild(canvas);
+                    });
+                });
+            });
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // Function to upload PDF file to Flask API
+    function uploadPDF(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        fetch('/ingest', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to ingest PDF file');
+            }
+            document.getElementById('extractInfo').disabled = false;
+            document.getElementById('successBox').classList.remove('hidden');
+            return response.json();
+        })
+        .then(data => {
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('errorBox').classList.remove('hidden');
+        })
+        .finally(() => {
+            hideLoading();
+        });
+    }
+
+    // Function to fetch data from Flask API
+    function fetchAPI(endpoint) {
+        $.ajax({
+            url: endpoint,
+            type: "GET",
+            success: function(response) {
+                console.log(response)
+                document.getElementById('extractedInfo').value = response;
+                hideLoading();
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching data:", error);
+                hideLoading();
+            }
+        });
+    }
+
+    // Function to show loading box
+    function showLoading() {
+        $('#loadingBox').show();
+    }
+
+    // Function to hide loading box
+    function hideLoading() {
+        $('#loadingBox').hide();
+    }
+});
+    </script>
+</body>
+</html>
+

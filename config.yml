@@ -1,0 +1,7 @@
+CHUNK_SIZE: 1000
+DATA_PATH: data/
+EMBEDDINGS: sentence-transformers/all-mpnet-base-v2
+INDEX_NAME: Fpozv0tj5o
+LLM: mistral:latest
+OLLAMA_BASE_URL: http://192.168.68.110:11434
+WEAVIATE_URL: http://localhost:8081
