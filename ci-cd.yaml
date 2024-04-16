@@ -1,0 +1,37 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  # Change this to your main branch name
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Tests
+        run: pytest  # Replace with your testing command
+
+      - name: Build Docker Image
+        run: |
+          docker build -t your-image-name .
+          docker tag your-image-name your-docker-username/your-image-name
+          docker push your-docker-username/your-image-name
+
+      - name: Deploy
+        run: |
+          # Add deployment steps here, such as deploying to a server or a cloud platform
