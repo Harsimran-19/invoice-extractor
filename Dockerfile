@@ -1,17 +1,17 @@
 FROM ubuntu:16.04
-
 FROM python:3.6.5
 
-RUN apt-get update -y && \
-    apt-get install -y python-pip python-dev
+# Update and install any additional dependencies if needed
+# Example:
+# RUN apt-get update && apt-get install -y <package-name>
 
-# We copy just the requirements.txt first to leverage Docker cache
+# Copy requirements.txt and install dependencies
 COPY ./requirements.txt /app/requirements.txt
-
 WORKDIR /app
-
 RUN pip install -r requirements.txt
 
+# Copy the rest of the application code
 COPY . /app
 
-CMD python  api.py
+# Specify the command to run the application
+CMD ["python", "api.py"]
