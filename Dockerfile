@@ -1,5 +1,5 @@
-FROM ubuntu:16.04
-FROM python:3.6.5
+# FROM ubuntu:16.04
+FROM python:3.9
 
 # Update and install any additional dependencies if needed
 # Example:
