@@ -16,7 +16,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.10
+          python-version: 3.9
 
       - name: Install Dependencies
         run: |
@@ -32,6 +32,6 @@ jobs:
           docker tag your-image-name your-docker-username/your-image-name
           docker push your-docker-username/your-image-name
 
-      - name: Deploy
-        run: |
-          # Add deployment steps here, such as deploying to a server or a cloud platform
+      # - name: Deploy
+      #   run: |
+      #     # Add deployment steps here, such as deploying to a server or a cloud platform
