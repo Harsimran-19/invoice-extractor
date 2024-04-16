@@ -14,4 +14,4 @@ RUN pip install -r requirements.txt
 
 COPY . /app
 
-CMD python /rag/pipeline.py && /api.py
+CMD python  api.py
