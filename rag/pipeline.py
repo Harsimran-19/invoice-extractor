@@ -67,7 +67,7 @@ def build_rag_pipeline(debug=False):
     logging.info("Loading Mistral...")
     llm = HuggingFaceInferenceAPI(
         model_name="mistralai/Mistral-7B-Instruct-v0.2",
-        token='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',
+        token='',
         context_window=4096,
         max_new_tokens=1024,
         tokenizer_kwargs={"max_length": 4096},
